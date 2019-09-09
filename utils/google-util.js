@@ -1,6 +1,8 @@
-const {google} = require('googleapis');
+const { google } = require('googleapis');
 
 require('dotenv').config()
+
+let oauth2Client;
 
 const googleConfig = {
     clientId: process.env.GOOGLE_CLIENT_ID,
@@ -27,27 +29,41 @@ function getConnectionUrl(auth) {
         access_type: 'offline',
         prompt: 'consent',
         scope: defaultScope
-      });
+    });
 }
 
-module.exports.urlGoogle = function() {
+function getOAuth2(auth) {
+    return google.oauth2({
+        auth: auth,
+        version: 'v2'
+    });
+}
+
+module.exports.urlGoogle = function () {
     const auth = createConnection();
+    // oauth2Client = createConnection();
     const url = getConnectionUrl(auth);
     return url;
 }
 
-module.exports.getGoogleAccountFromCode = async function(code) {
-    const data = await auth.getToken(code);
-    const tokens = data.tokens;
+module.exports.getGoogleAccountFromCode = async function (code, cb) {
     const auth = createConnection();
+    const { tokens } = await auth.getToken(code);
     auth.setCredentials(tokens);
-    const plus = getGooglePlusApi(auth);
-    const me = await plus.people.get({ userId: 'me' });
-    const userGoogleId = me.data.id;
-    const userGoogleEmail = me.data.emails && me.data.emails.length && me.data.emails[0].value;
-    return {
-      id: userGoogleId,
-      email: userGoogleEmail,
-      tokens: tokens,
-    };
-  }
+    const user = await getOAuth2(auth);
+    user.userinfo.get((err, res) => {
+        if (err) {
+            cb(err);
+        } else {
+            const userProfile = {
+                id: res.data.id,
+                accessToken: tokens.access_token,
+                name: res.data.name,
+                displayPicture: res.data.picture,
+                email: res.data.email
+            }
+            cb(null, userProfile);
+        }
+    })
+
+}
