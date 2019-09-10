@@ -11,7 +11,7 @@ const googleConfig = {
 }
 
 const defaultScope = [
-    'https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/calendar.events.readonly',
     'profile',
     'email'
 ]

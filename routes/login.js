@@ -1,6 +1,8 @@
 const express = require('express');
 const queryString = require('query-string');
+const { google } = require('googleapis');
 const googleUtil = require('../utils/google-util');
+const googleCalenderService =require('../services/google-calendar.service');
 
 const router = express.Router();
 
@@ -35,6 +37,14 @@ router.get('/redirect', (req, res) => {
 router.get('/home', (req, res) => {
     console.log(req.session);
     if (req.session.user) {
+
+        // get calendar events
+        const oauth2Client = new google.auth.OAuth2();
+        oauth2Client.setCredentials({
+            access_token: req.session.user.accessToken
+        });
+        googleCalenderService.listEvents(oauth2Client);
+
         res.render('redirect.html');
     } else {
         res.redirect('/login')
