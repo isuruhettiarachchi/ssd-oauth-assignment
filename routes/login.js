@@ -35,29 +35,33 @@ router.get('/redirect', (req, res) => {
 
 
 router.get('/home', (req, res) => {
-    console.log(req.session);
+    // console.log(req.session);
     if (req.session.user) {
+
+        // let data;
 
         // get calendar events
         const oauth2Client = new google.auth.OAuth2();
         oauth2Client.setCredentials({
             access_token: req.session.user.accessToken
         });
-        googleCalenderService.listEvents(oauth2Client);
-
-        res.render('redirect.html');
+        googleCalenderService.listEvents(oauth2Client, (events) => {  
+            console.log(events);
+                      
+            const data = {
+                name: req.session.user.name,
+                displayPicture: req.session.user.displayPicture,
+                id: req.session.user.id,
+                email: req.session.user.email,
+                events: events
+            }
+            res.render('dashboard.html', data);
+        });
+        
     } else {
         res.redirect('/login')
     }
 });
-
-// router.get('/test', (req, res) => {
-//     if (req.session.user) {
-//         res.send('session works' + req.session.user);
-//     } else {
-//         res.send('error');
-//     }
-// })
 
 router.get('/logout', (req, res) => {
     req.session.destroy(err => {
