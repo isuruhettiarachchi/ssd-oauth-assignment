@@ -2,20 +2,21 @@ const { google } = require('googleapis');
 
 require('dotenv').config()
 
-let oauth2Client;
-
+// google app config
 const googleConfig = {
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     redirect: 'http://localhost:3000/auth/success'
 }
 
+// scopes use for the application
 const defaultScope = [
     'https://www.googleapis.com/auth/calendar.events.readonly',
     'profile',
     'email'
 ]
 
+// oauth2 client
 function createConnection() {
     return new google.auth.OAuth2(
         googleConfig.clientId,
@@ -24,6 +25,7 @@ function createConnection() {
     );
 }
 
+// generate authentication url
 function getConnectionUrl(auth) {
     return auth.generateAuthUrl({
         access_type: 'offline',
@@ -32,18 +34,20 @@ function getConnectionUrl(auth) {
     });
 }
 
+
+// get auth url
+module.exports.urlGoogle = function () {
+    const auth = createConnection();
+    const url = getConnectionUrl(auth);
+    return url;
+}
+
+// get oauth2 api
 function getOAuth2(auth) {
     return google.oauth2({
         auth: auth,
         version: 'v2'
     });
-}
-
-module.exports.urlGoogle = function () {
-    const auth = createConnection();
-    // oauth2Client = createConnection();
-    const url = getConnectionUrl(auth);
-    return url;
 }
 
 module.exports.getGoogleAccountFromCode = async function (code, cb) {

@@ -1,21 +1,23 @@
 const express = require('express');
 const nunjucks = require('nunjucks');
-const passport = require('passport');
 const session = require('express-session');
-const homeRouter = require('./routes/home');
-const loginRouter = require('./routes/login');
+const indexRouter = require('./routes/index.route');
 
 const app = express();
 
 require('dotenv').config()
 
+// nunjucks config
 nunjucks.configure('views', {
     autoescape: true,
     express: app
 });
 
+// init static files
+// this files contain css and js for views
 app.use(express.static('public'))
 
+// express-session config
 app.use(
     session({
       name: 'sid',
@@ -29,15 +31,13 @@ app.use(
       }
     })
   )
-  
 
-app.use(passport.initialize());
-app.use(passport.session());
-
-app.get('/idnex', (req, res) => {
+// test route
+app.get('/index', (req, res) => {
     res.send('App works');
 });
 
-app.use('', loginRouter);
+// index route
+app.use('', indexRouter);
 
 module.exports = app;
